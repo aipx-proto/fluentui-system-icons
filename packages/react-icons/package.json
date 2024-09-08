@@ -12,6 +12,7 @@
     "url": "https://github.com/microsoft/fluentui-system-icons.git"
   },
   "scripts": {
+    "docgen": "node ./docgen.js",
     "clean": "find ./src -type f ! -name \"wrapIcon.tsx\" -name \"*.tsx\" -delete",
     "clean:svg": "rm -rf ./intermediate",
     "clean:gitignore": "git clean -fdX",
@@ -105,4 +106,3 @@
     }
   }
 }
-
