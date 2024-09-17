@@ -1,6 +1,7 @@
 const glob = require("glob");
 const fs = require("fs/promises");
 const _ = require("lodash");
+const runtimeIcons = require("./temp/react-icons/lib-cjs/index.js");
 
 // read all files ../../assets/**/*.metadata.json
 const files = glob.sync("../../assets/**/metadata.json");
@@ -10,7 +11,21 @@ async function processFiles(files) {
     files.map(async (file) => {
       const metadata = require(file);
 
-      const name = firstLetterUpperCase(_.camelCase(metadata.name));
+      const name = firstLetterUpperCase(
+        _.camelCase(
+          metadata.name
+            .split(/\s|-/)
+            .map((part) => part.toLowerCase())
+            .join(" ")
+        )
+      );
+
+      const firstStyle = metadata.style[0];
+      const testName = `${name}${firstLetterUpperCase(firstStyle)}`;
+      if (!runtimeIcons[testName]) {
+        console.log(`Icon not found: ${testName}`);
+        return null;
+      }
       const styleRemark = metadata.style?.length === 2 ? "" : `Only available in ${metadata.style.join(", ")} style`;
       const metaphor = metadata.metaphor?.length ? `${metadata.metaphor.join(", ")}` : "";
       const description = (metadata.description ?? "").replace(/\.$/, "");
@@ -26,9 +41,12 @@ async function processFiles(files) {
     })
   );
 
-  const docStrings = jsonItems.map(compressDescription).map((item) => {
-    return Object.values(item).filter(Boolean).join(" | ");
-  });
+  const docStrings = jsonItems
+    .filter(Boolean)
+    .map(compressDescription)
+    .map((item) => {
+      return Object.values(item).filter(Boolean).join(" | ");
+    });
 
   // output to ./dist/docstrings.txt
   await fs.mkdir("./dist", { recursive: true });
